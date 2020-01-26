@@ -1,12 +1,14 @@
 #include <SPI.h>
 #include "blink.h"
+#include "timeout.h"
 
+unsigned int time = millis();
 bool input = false;
-Blink *ledBlink;
+cBlink ledBlink(100);
+cTimeout timeOut;
 
 void setup()
 {
-  ledBlink = new Blink();
   Serial.begin(19200);
   Serial.write('O');
   delay(500);
@@ -18,21 +20,29 @@ void serialEvent()
 {
     while(Serial.available())
     {
-//      Serial.write(Serial.read());
       if((char)Serial.read() == '\n')
         input = true;
     }
+    timeOut.TimeoutStart(1000);
 }
 
 void loop()
 {
-  //delay(5000);
-  if(input)
+  if(timeOut.isTimeOver())
   {
-    delay(10);
-    input = false;
-    ledBlink->run();
-    Serial.write('D');
+    ledBlink.LedToggle();
+    timeOut.TimeoutStart(100);
   }
-  //Serial.write('\n');
+  
+//  ledBlink.run();
+//  //Serial.write(millis());
+//  //printf("%d", millis());
+//  if(input)
+//  {
+//    delay(10);
+//    input = false;
+//    ledBlink.run();
+//    Serial.write('D');
+//  }
+  
 }
