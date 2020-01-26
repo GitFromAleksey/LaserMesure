@@ -3,6 +3,7 @@
 #include "stdinout.h"
 #include "blink.h"
 #include "timeout.h"
+#include "parser.h"
 #include <SoftwareSerial.h>
 
 #define UART_DEBUG
@@ -22,6 +23,7 @@ bool isInputData = false;
 
 cBlink ledBlink(DEFAULT_BLINK_PERIOD);
 cTimeout timeOut;
+cParser parser;
 
 SoftwareSerial mySerial(8, 9); // RX, TX
 
@@ -31,6 +33,7 @@ void setup()
 
 #ifdef UART_DEBUG
   mySerial.begin(19200);
+  parser.SetSerial(&mySerial);
 //  mySerial.println("Hello, world?");
 #endif
 }
@@ -52,12 +55,13 @@ void serialEvent()
   {
 #ifdef UART_DEBUG
     tmp = Serial.read();
-    mySerial.write(tmp);
+   // mySerial.write(tmp);
 #endif
-
+    parser.addNextChar(tmp);
     if(tmp == END_OF_PACKET)
     {
       isInputData = true;
+      
       ledBlink.LedOn();
     }
   }
@@ -82,9 +86,7 @@ void loop()
   {
     delay(10);
     isInputData = false;
-    //Serial.write(LASER_MESURE_CMD);
-    Serial.write(LASER_FAST_MESURE_CMD);//
+    Serial.write(LASER_MESURE_CMD);
     ledBlink.LedOff();
   }
-  
 }
