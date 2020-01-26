@@ -3,6 +3,9 @@
 #include "stdinout.h"
 #include "blink.h"
 #include "timeout.h"
+#include <SoftwareSerial.h>
+
+#define UART_DEBUG
 
 #define LASER_OPEN_CMD        (char)'O'
 #define LASER_CLOSE_CMD       (char)'C'
@@ -20,25 +23,39 @@ bool isInputData = false;
 cBlink ledBlink(DEFAULT_BLINK_PERIOD);
 cTimeout timeOut;
 
+SoftwareSerial mySerial(8, 9); // RX, TX
+
 void setup()
 {
   Serial.begin(19200);
+
+#ifdef UART_DEBUG
+  mySerial.begin(19200);
+//  mySerial.println("Hello, world?");
+#endif
 }
 
 void LaserInit()
 {
   Serial.write(LASER_OPEN_CMD);
   delay(10);
-  Serial.write(LASER_MESURE_CMD);  
+  Serial.write(LASER_MESURE_CMD);
   timeOut.TimeoutStart(DEFAULT_TIMEOUT);
   ledBlink.LedOn();
 }
 
 void serialEvent()
 {
+  char tmp;
+
   while(Serial.available())
   {
-    if((char)Serial.read() == END_OF_PACKET)
+#ifdef UART_DEBUG
+    tmp = Serial.read();
+    mySerial.write(tmp);
+#endif
+
+    if(tmp == END_OF_PACKET)
     {
       isInputData = true;
       ledBlink.LedOn();
@@ -65,7 +82,8 @@ void loop()
   {
     delay(10);
     isInputData = false;
-    Serial.write(LASER_MESURE_CMD);
+    //Serial.write(LASER_MESURE_CMD);
+    Serial.write(LASER_FAST_MESURE_CMD);//
     ledBlink.LedOff();
   }
   
