@@ -14,6 +14,9 @@ public:
     m_CurrentTimeMs = millis();
   }
 
+  unsigned long getCurrentTime()
+  { return m_TimeoutMs;}
+
   bool isTimeOver()
   {
     run();

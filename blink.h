@@ -30,6 +30,9 @@ public:
       m_Time = millis();
   }
 
+  void LedOn(){digitalWrite(LED_BUILTIN, HIGH); m_LedState = false;}
+  void LedOff(){digitalWrite(LED_BUILTIN, LOW); m_LedState = true;}
+
   void LedToggle()
   {
     if(m_LedState)
