@@ -19,6 +19,14 @@ public:
     this->serial = serial;
   }
 
+  void getArray(int *dist)
+  {
+    dist[0] = m_OutChar[3];
+    dist[1] = m_OutChar[2];
+    dist[2] = m_OutChar[1];
+    dist[3] = m_OutChar[0];
+  }
+
   void addNextChar(char ch)
   {
     
@@ -32,13 +40,13 @@ public:
           m_Buf.replace(".","");
           m_out  = "";
           m_out += m_Buf.charAt(0);
-          m_OutChar[0] = m_Buf.charAt(0);
+          m_OutChar[0] = CharToInt(m_Buf.charAt(0));
           m_out += m_Buf.charAt(1);
-          m_OutChar[1] = m_Buf.charAt(1);
+          m_OutChar[1] = CharToInt(m_Buf.charAt(1));
           m_out += m_Buf.charAt(2);
-          m_OutChar[2] = m_Buf.charAt(2);
+          m_OutChar[2] = CharToInt(m_Buf.charAt(2));
           m_out += m_Buf.charAt(3);
-          m_OutChar[3] = m_Buf.charAt(3);
+          m_OutChar[3] = CharToInt(m_Buf.charAt(3));
           m_IsData = true;
         }
         serial->println(m_Buf);
@@ -56,8 +64,28 @@ public:
 private:
   String m_Buf;
   String m_out;
-  char m_OutChar[4];
+  int m_OutChar[4];
   bool m_IsData;
+
+  int CharToInt(char ch)
+  {
+    int res = 0;
+    switch(ch)
+    {
+      case '0': res = 0; break;
+      case '1': res = 1; break;
+      case '2': res = 2; break;
+      case '3': res = 3; break;
+      case '4': res = 4; break;
+      case '5': res = 5; break;
+      case '6': res = 6; break;
+      case '7': res = 7; break;
+      case '8': res = 8; break;
+      case '9': res = 9; break;
+      default : break;
+    }
+    return res;
+  }
 };
 
 

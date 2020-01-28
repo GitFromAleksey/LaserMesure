@@ -21,9 +21,9 @@ void loop()
 
   for (int a = 0; a < 4; a++)
   {
-    dist[a] = a;
+    dist[a] = 8;
     lc.setDigit(0, a, dist[a] , false);
-    delay(10);
+    delay(7);
   }
 
 

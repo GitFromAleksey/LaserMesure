@@ -5,6 +5,9 @@
 #include "timeout.h"
 #include "parser.h"
 #include <SoftwareSerial.h>
+#include "LedControl.h" //  Подключаем библиотеку
+LedControl lc = LedControl(12, 11, 10, 1); // используемы пины ардуины для подключения, и сколько драйверов в цепочке
+int dist[4];  // массив для измеренного расстояния
 
 #define UART_DEBUG
 
@@ -36,6 +39,11 @@ void setup()
   parser.SetSerial(&mySerial);
 //  mySerial.println("Hello, world?");
 #endif
+
+  //Инициируем MAX7219
+  lc.shutdown(0, false); // включаем дисплей энергосбережение дисплей
+  lc.setIntensity(0, 15); // устанавливаем яркость (0-минимум, 15-максимум)
+  lc.clearDisplay(0);// очищаем дисплей
 }
 
 void LaserInit()
@@ -88,5 +96,13 @@ void loop()
     isInputData = false;
     Serial.write(LASER_MESURE_CMD);
     ledBlink.LedOff();
+  }
+
+  lc.clearDisplay(0);
+  parser.getArray(dist);
+  for (int a = 0; a < 4; a++)
+  {
+    lc.setDigit(0, a, dist[a] , false);
+    //delay(7);
   }
 }
