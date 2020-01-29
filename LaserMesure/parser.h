@@ -11,7 +11,10 @@ public:
   SoftwareSerial *serial;
   
   cParser():m_IsData(false)
-  {m_Buf = "";}
+  {
+    m_OutChar[0] = m_OutChar[1] = m_OutChar[2] = m_OutChar[3] = 8;
+    m_Buf = "";
+  }
   ~cParser(){}
 
   void SetSerial(SoftwareSerial *serial)
