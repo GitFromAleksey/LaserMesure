@@ -10,10 +10,10 @@ class cParser
 public:
   SoftwareSerial *serial;
   
-  cParser():m_IsData(false)
+  cParser():m_IsData(false), m_ParseDigit(0), m_NullDigit(0)
   {
-    m_OutChar[0] = m_OutChar[1] = m_OutChar[2] = m_OutChar[3] = 8;
-    m_Buf = "";
+    m_OutCharBuf[0] = m_OutCharBuf[1] = m_OutCharBuf[2] = m_OutCharBuf[3] = 8;
+    m_StringBuf = "";
   }
   ~cParser(){}
 
@@ -24,10 +24,19 @@ public:
 
   void getArray(int *dist)
   {
-    dist[0] = m_OutChar[3];
-    dist[1] = m_OutChar[2];
-    dist[2] = m_OutChar[1];
-    dist[3] = m_OutChar[0];
+    int tmp = m_ParseDigit - m_NullDigit;
+    if(tmp < 0) tmp = 8888;
+//    dist[0] = m_OutCharBuf[3];
+//    dist[1] = m_OutCharBuf[2];
+//    dist[2] = m_OutCharBuf[1];
+//    dist[3] = m_OutCharBuf[0];
+
+    dist[0] = tmp%10; 
+    tmp = tmp/10;
+    dist[1] = tmp%10; 
+    tmp = tmp/10;
+    dist[2] = tmp%10;
+    dist[3] = tmp/10;
   }
 
   void addNextChar(char ch)
@@ -35,39 +44,57 @@ public:
     
     if(ch == '\n')
     {
-      if(m_Buf.lastIndexOf("D: ") > -1 )
+      if(m_StringBuf.lastIndexOf("D: ") > -1)
       {
-        m_Buf.replace("D: ","");
-        if(m_Buf.lastIndexOf("m,") > -1)
+        m_StringBuf.replace("D: ","");
+        if(m_StringBuf.lastIndexOf("m,") > -1)
         {
-          m_Buf.replace(".","");
-          m_out  = "";
-          m_out += m_Buf.charAt(0);
-          m_OutChar[0] = CharToInt(m_Buf.charAt(0));
-          m_out += m_Buf.charAt(1);
-          m_OutChar[1] = CharToInt(m_Buf.charAt(1));
-          m_out += m_Buf.charAt(2);
-          m_OutChar[2] = CharToInt(m_Buf.charAt(2));
-          m_out += m_Buf.charAt(3);
-          m_OutChar[3] = CharToInt(m_Buf.charAt(3));
+          m_StringBuf.replace(".","");
+
+          m_StringOut  = "";
+          m_StringOut += m_StringBuf.charAt(0);
+          m_StringOut += m_StringBuf.charAt(1);
+          m_StringOut += m_StringBuf.charAt(2);
+          m_StringOut += m_StringBuf.charAt(3);
+
+
+          m_OutCharBuf[0] = CharToInt(m_StringBuf.charAt(0));
+          m_OutCharBuf[1] = CharToInt(m_StringBuf.charAt(1));
+          m_OutCharBuf[2] = CharToInt(m_StringBuf.charAt(2));
+          m_OutCharBuf[3] = CharToInt(m_StringBuf.charAt(3));
+
+          m_ParseDigit = 0;
+          m_ParseDigit += m_OutCharBuf[0] * 1000;
+          m_ParseDigit += m_OutCharBuf[1] * 100;
+          m_ParseDigit += m_OutCharBuf[2] * 10;
+          m_ParseDigit += m_OutCharBuf[3];
+
           m_IsData = true;
         }
-        serial->println(m_Buf);
-        serial->println(m_out);//Print();
+        serial->println(m_StringBuf);
+        serial->println(m_StringOut);
       }
-      m_Buf = "";
+      m_StringBuf = "";
     }
     else
     {
-      m_Buf += ch;
+      m_StringBuf += ch;
       m_IsData = false;
     }
   }
 
+  int getCurrentLen()const {return m_ParseDigit;}
+
+  void setNull(const int _null) { m_NullDigit = _null;}
+
+  void setParseDigitValue(const int val){m_ParseDigit = val;}
+  
 private:
-  String m_Buf;
-  String m_out;
-  int m_OutChar[4];
+  String m_StringBuf;
+  String m_StringOut;
+  int m_ParseDigit;
+  int m_NullDigit;
+  int m_OutCharBuf[4];
   bool m_IsData;
 
   int CharToInt(char ch)

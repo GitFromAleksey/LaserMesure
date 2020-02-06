@@ -1,3 +1,5 @@
+#include <EEPROM.h>
+
 //#include <SPI.h>
 #include <stdio.h>
 #include "stdinout.h"
@@ -20,6 +22,10 @@ int dist[4];  // массив для отображения расстояния
 
 #define DEFAULT_BLINK_PERIOD  500u // ms
 #define DEFAULT_TIMEOUT       10000u // ms
+
+#define KEY_NULL_PIN          13u
+
+#define EEPROM_NULL_VALUE_ADDRESS   0
 
 //unsigned int time = millis();
 bool isInputData = false;
@@ -45,6 +51,14 @@ void setup()
   lc.setIntensity(0, 15); // устанавливаем яркость (0-минимум, 15-максимум)
   lc.clearDisplay(0);// очищаем дисплей
   IndicatorShow();
+
+  pinMode(KEY_NULL_PIN, INPUT);
+  digitalWrite(KEY_NULL_PIN, HIGH);
+  
+  parser.setParseDigitValue(EepromRead(EEPROM_NULL_VALUE_ADDRESS));
+  IndicatorShow();
+  parser.setNull(EepromRead(EEPROM_NULL_VALUE_ADDRESS));
+  delay(5000);
 }
 
 void LaserInit()
@@ -89,6 +103,17 @@ void serialEvent()
   timeOut.TimeoutStart(DEFAULT_BLINK_PERIOD);
 }
 
+void EepromSave(int address, int val)
+{
+  EEPROM.write(address, val>>8);
+  EEPROM.write(address+1, val);
+}
+
+int EepromRead(int address)
+{
+  return (int)((EEPROM.read(address)<<8) | EEPROM.read(address+1));
+}
+
 void loop()
 {
   //ledBlink.run();
@@ -109,4 +134,24 @@ void loop()
     Serial.write(LASER_MESURE_CMD);
     ledBlink.LedOff();
   }
+
+  if(digitalRead(KEY_NULL_PIN) == LOW)
+  {
+    int cnt = 100;
+    while(digitalRead(KEY_NULL_PIN) == LOW)
+    {
+      delay(1);
+      if(cnt-- == 0)
+      {
+        ledBlink.LedOn();
+        IndicatorShow();
+        EepromSave(EEPROM_NULL_VALUE_ADDRESS, parser.getCurrentLen());
+        parser.setNull( parser.getCurrentLen());
+        delay(3000);
+      }
+    }
+
+  }
+
+
 }
