@@ -24,7 +24,7 @@ public:
 
   void getArray(int *dist)
   {
-    int tmp = m_ParseDigit - m_NullDigit;
+    int tmp =  m_NullDigit - m_ParseDigit;
     if(tmp < 0) tmp = 8888;
 //    dist[0] = m_OutCharBuf[3];
 //    dist[1] = m_OutCharBuf[2];
