@@ -9,19 +9,21 @@
 #include <SoftwareSerial.h>
 #include "LedControl.h" //  Подключаем библиотеку
 LedControl lc = LedControl(12, 11, 10, 1); // используемы пины ардуины для подключения, и сколько драйверов в цепочке
-int dist[4];  // массив для отображения расстояния
+#define DIST_SIZE 4u
+char dist[DIST_SIZE];  // массив для отображения расстояния
 
 #define UART_DEBUG
 
 #define LASER_OPEN_CMD        (char)'O'
 #define LASER_CLOSE_CMD       (char)'C'
-#define LASER_MESURE_CMD      (char)'D'
+#define LASER_SLOW_MESURE_CMD (char)'D'
 #define LASER_FAST_MESURE_CMD (char)'F'
 #define LASER_GET_INFO_CMD    (char)'S'
 #define END_OF_PACKET         (char)'\n'
+#define LASER_MESURE_CMD      LASER_FAST_MESURE_CMD
 
 #define DEFAULT_BLINK_PERIOD  500u // ms
-#define DEFAULT_TIMEOUT       10000u // ms
+#define DEFAULT_TIMEOUT       3000u // ms
 
 #define KEY_NULL_PIN          13u
 
@@ -32,7 +34,7 @@ bool isInputData = false;
 
 cBlink ledBlink(DEFAULT_BLINK_PERIOD);
 cTimeout timeOut;
-cParser parser;
+cParser parser(LASER_MESURE_CMD);
 
 SoftwareSerial mySerial(8, 9); // RX, TX
 
@@ -70,13 +72,22 @@ void LaserInit()
   ledBlink.LedOn();
 }
 
+void IndicatorClear()
+{
+  for(int i = 0; i < DIST_SIZE; i++)
+  {
+    dist[i] = 0;
+  }
+}
+
 void IndicatorShow()
 {
   parser.getArray(dist);
 
   for (int a = 0; a < 4; a++)
   {
-    lc.setDigit(0, a, dist[a] , false);
+    //lc.setDigit(0, a, dist[a] , false);
+    lc.setChar(0, a, dist[a] , false);
   }
 }
 
@@ -123,8 +134,11 @@ void loop()
   {
     ledBlink.LedOff();
     isInputData = false;
-    Serial.write(LASER_MESURE_CMD);
+    Serial.write(LASER_OPEN_CMD);
     timeOut.TimeoutStart(DEFAULT_TIMEOUT);
+    parser.setParseDigitValue(EepromRead(EEPROM_NULL_VALUE_ADDRESS)+10); // выводим все 0-ли при инициализации
+    IndicatorClear();
+    IndicatorShow();
   }
 
   if(isInputData)
@@ -150,8 +164,6 @@ void loop()
         delay(3000);
       }
     }
-
   }
-
 
 }

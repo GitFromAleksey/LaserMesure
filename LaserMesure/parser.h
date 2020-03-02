@@ -8,12 +8,14 @@
 class cParser
 {
 public:
-  SoftwareSerial *serial;
+  SoftwareSerial *serial; // указатель на экземпляр COM порта для отправки логов
   
-  cParser():m_IsData(false), m_ParseDigit(0), m_NullDigit(0)
+  cParser(char laserCmd):m_IsData(false), m_ParseDigit(0), m_NullDigit(0)
   {
     m_OutCharBuf[0] = m_OutCharBuf[1] = m_OutCharBuf[2] = m_OutCharBuf[3] = 8;
     m_StringBuf = "";
+    m_BeginSubstr = laserCmd;
+    m_BeginSubstr = m_BeginSubstr + ": ";
   }
   ~cParser(){}
 
@@ -22,31 +24,40 @@ public:
     this->serial = serial;
   }
 
-  void getArray(int *dist)
+  void getArray(char *dist)
   {
     int tmp =  m_NullDigit - m_ParseDigit;
-    if(tmp < 0) tmp = 8888;
-//    dist[0] = m_OutCharBuf[3];
-//    dist[1] = m_OutCharBuf[2];
-//    dist[2] = m_OutCharBuf[1];
-//    dist[3] = m_OutCharBuf[0];
-
-    dist[0] = tmp%10; 
-    tmp = tmp/10;
-    dist[1] = tmp%10; 
-    tmp = tmp/10;
-    dist[2] = tmp%10;
-    dist[3] = tmp/10;
+    if(tmp < 0)
+    {
+      //tmp = 8888;
+      tmp = abs(tmp);
+      dist[3] = '-';
+      dist[0] = tmp%10;
+      tmp = tmp/10;
+      dist[1] = tmp%10;
+      tmp = tmp/10;
+      dist[2] = tmp%10;
+    }
+    else
+    {
+      dist[0] = tmp%10;
+      tmp = tmp/10;
+      dist[1] = tmp%10;
+      tmp = tmp/10;
+      dist[2] = tmp%10;
+      dist[3] = tmp/10;
+    }
   }
 
   void addNextChar(char ch)
   {
-    
     if(ch == '\n')
     {
-      if(m_StringBuf.lastIndexOf("D: ") > -1)
+      //if(m_StringBuf.lastIndexOf("D: ") > -1)
+      if(m_StringBuf.lastIndexOf(m_BeginSubstr) > -1)
       {
-        m_StringBuf.replace("D: ","");
+        //m_StringBuf.replace("D: ","");
+        m_StringBuf.replace(m_BeginSubstr,"");
         if(m_StringBuf.lastIndexOf("m,") > -1)
         {
           m_StringBuf.replace(".","");
@@ -90,12 +101,13 @@ public:
   void setParseDigitValue(const int val){m_ParseDigit = val;}
   
 private:
-  String m_StringBuf;
-  String m_StringOut;
-  int m_ParseDigit;
-  int m_NullDigit;
-  int m_OutCharBuf[4];
-  bool m_IsData;
+  String m_StringBuf; // для хранения входящей строки ответа от лазера
+  String m_BeginSubstr;
+  String m_StringOut; // распарсенный ответ от лазера в виде строки
+  int m_ParseDigit;   // ответ от лазера в виде числа
+  int m_NullDigit;    // нулевая координата, число от которого вычитается m_ParseDigit. Это и есть искомое расстояние
+  int m_OutCharBuf[4];  // промежуточный буфер для конвертации строки в число
+  bool m_IsData;        // флаг готовых данных
 
   int CharToInt(char ch)
   {
@@ -112,7 +124,7 @@ private:
       case '7': res = 7; break;
       case '8': res = 8; break;
       case '9': res = 9; break;
-      default : break;
+      default:           break;
     }
     return res;
   }
