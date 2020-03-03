@@ -10,7 +10,7 @@ class cParser
 public:
   SoftwareSerial *serial; // указатель на экземпляр COM порта для отправки логов
   
-  cParser(char laserCmd):m_IsData(false), m_ParseDigit(0), m_NullDigit(0)
+  cParser(char laserCmd): m_ParseDigit(0), m_NullDigit(0), m_IsData(false), m_CorrectCoef(1.0)
   {
     m_OutCharBuf[0] = m_OutCharBuf[1] = m_OutCharBuf[2] = m_OutCharBuf[3] = 8;
     m_StringBuf = "";
@@ -26,7 +26,7 @@ public:
 
   void getArray(char *dist)
   {
-    int tmp =  m_NullDigit - m_ParseDigit;
+    int tmp =  (m_NullDigit - m_ParseDigit) * m_CorrectCoef;
     if(tmp < 0)
     {
       //tmp = 8888;
@@ -53,10 +53,8 @@ public:
   {
     if(ch == '\n')
     {
-      //if(m_StringBuf.lastIndexOf("D: ") > -1)
       if(m_StringBuf.lastIndexOf(m_BeginSubstr) > -1)
       {
-        //m_StringBuf.replace("D: ","");
         m_StringBuf.replace(m_BeginSubstr,"");
         if(m_StringBuf.lastIndexOf("m,") > -1)
         {
@@ -94,11 +92,13 @@ public:
     }
   }
 
-  int getCurrentLen()const {return m_ParseDigit;}
+  int getCurrentLen()const { return m_ParseDigit; }
 
-  void setNull(const int _null) { m_NullDigit = _null;}
+  void setNull(const int _null) { m_NullDigit = _null; }
 
-  void setParseDigitValue(const int val){m_ParseDigit = val;}
+  void setParseDigitValue(const int val) { m_ParseDigit = val; }
+
+  void setCorrectCoef(const float realSize, const float requiredSize) { m_CorrectCoef = requiredSize/realSize; }
   
 private:
   String m_StringBuf; // для хранения входящей строки ответа от лазера
@@ -108,6 +108,7 @@ private:
   int m_NullDigit;    // нулевая координата, число от которого вычитается m_ParseDigit. Это и есть искомое расстояние
   int m_OutCharBuf[4];  // промежуточный буфер для конвертации строки в число
   bool m_IsData;        // флаг готовых данных
+  float m_CorrectCoef;  // корректирующий коэффициент если набегает ошибка
 
   int CharToInt(char ch)
   {

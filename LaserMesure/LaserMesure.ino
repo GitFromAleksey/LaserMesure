@@ -12,6 +12,10 @@ LedControl lc = LedControl(12, 11, 10, 1); // используемы пины а
 #define DIST_SIZE 4u
 char dist[DIST_SIZE];  // массив для отображения расстояния
 
+// данные для калибровки расстояния
+#define SIZE_REAL      1.0f   // реальный измеренный размер
+#define SIZE_REQUIRED  1.0f   // требуемый размер
+
 #define UART_DEBUG
 
 #define LASER_OPEN_CMD        (char)'O'
@@ -52,15 +56,16 @@ void setup()
   lc.shutdown(0, false); // включаем дисплей энергосбережение дисплей
   lc.setIntensity(0, 15); // устанавливаем яркость (0-минимум, 15-максимум)
   lc.clearDisplay(0);// очищаем дисплей
-  IndicatorShow();
+  delay(500);
 
   pinMode(KEY_NULL_PIN, INPUT);
   digitalWrite(KEY_NULL_PIN, HIGH);
   
   parser.setParseDigitValue(EepromRead(EEPROM_NULL_VALUE_ADDRESS));
-  IndicatorShow();
   parser.setNull(EepromRead(EEPROM_NULL_VALUE_ADDRESS));
-  delay(5000);
+  parser.setCorrectCoef(SIZE_REAL, SIZE_REQUIRED);
+  IndicatorShow();
+  delay(500);
 }
 
 void LaserInit()
@@ -74,7 +79,7 @@ void LaserInit()
 
 void IndicatorClear()
 {
-  for(int i = 0; i < DIST_SIZE; i++)
+  for(uint8_t i = 0; i < DIST_SIZE; i++)
   {
     dist[i] = 0;
   }
@@ -136,7 +141,7 @@ void loop()
     isInputData = false;
     Serial.write(LASER_OPEN_CMD);
     timeOut.TimeoutStart(DEFAULT_TIMEOUT);
-    parser.setParseDigitValue(EepromRead(EEPROM_NULL_VALUE_ADDRESS)+10); // выводим все 0-ли при инициализации
+    parser.setParseDigitValue(EepromRead(EEPROM_NULL_VALUE_ADDRESS)); // выводим все 0-ли при инициализации
     IndicatorClear();
     IndicatorShow();
   }
