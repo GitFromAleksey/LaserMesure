@@ -13,8 +13,8 @@ LedControl lc = LedControl(12, 11, 10, 1); // используемы пины а
 char dist[DIST_SIZE];  // массив для отображения расстояния
 
 // данные для калибровки расстояния
-#define SIZE_REAL      1.0f   // реальный измеренный размер
-#define SIZE_REQUIRED  1.0f   // требуемый размер
+#define SIZE_REAL      4997.0f   // реальный измеренный размер
+#define SIZE_REQUIRED  5000.0f   // требуемый размер
 
 #define UART_DEBUG
 
@@ -24,7 +24,7 @@ char dist[DIST_SIZE];  // массив для отображения расст�
 #define LASER_FAST_MESURE_CMD (char)'F'
 #define LASER_GET_INFO_CMD    (char)'S'
 #define END_OF_PACKET         (char)'\n'
-#define LASER_MESURE_CMD      LASER_FAST_MESURE_CMD
+#define LASER_MESURE_CMD      LASER_SLOW_MESURE_CMD
 
 #define DEFAULT_BLINK_PERIOD  500u // ms
 #define DEFAULT_TIMEOUT       3000u // ms
@@ -116,7 +116,7 @@ void serialEvent()
     }
   }
   
-  timeOut.TimeoutStart(DEFAULT_BLINK_PERIOD);
+  timeOut.TimeoutStart(DEFAULT_TIMEOUT);
 }
 
 void EepromSave(int address, int val)
@@ -142,7 +142,7 @@ void loop()
     Serial.write(LASER_OPEN_CMD);
     timeOut.TimeoutStart(DEFAULT_TIMEOUT);
     parser.setParseDigitValue(EepromRead(EEPROM_NULL_VALUE_ADDRESS)); // выводим все 0-ли при инициализации
-    IndicatorClear();
+    //IndicatorClear();
     IndicatorShow();
   }
 

@@ -66,7 +66,6 @@ public:
           m_StringOut += m_StringBuf.charAt(2);
           m_StringOut += m_StringBuf.charAt(3);
 
-
           m_OutCharBuf[0] = CharToInt(m_StringBuf.charAt(0));
           m_OutCharBuf[1] = CharToInt(m_StringBuf.charAt(1));
           m_OutCharBuf[2] = CharToInt(m_StringBuf.charAt(2));
