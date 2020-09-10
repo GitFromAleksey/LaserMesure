@@ -1,0 +1,21 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+# SharpDevelop 4.4
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SNDWAY_SW-T4S", "HoningMachineConfig\SNDWAY_SW-T4S.csproj", "{69DF4A63-09AA-436E-9691-EC4A90D17BDA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{69DF4A63-09AA-436E-9691-EC4A90D17BDA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69DF4A63-09AA-436E-9691-EC4A90D17BDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69DF4A63-09AA-436E-9691-EC4A90D17BDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69DF4A63-09AA-436E-9691-EC4A90D17BDA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

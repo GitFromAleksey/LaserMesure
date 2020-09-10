@@ -1,0 +1,9 @@
+E:\Projects\LaserMesure\SNDWAY_SW-T4S\HoningMachineConfig\bin\Debug\SNDWAY_SW-T4S.exe.config
+E:\Projects\LaserMesure\SNDWAY_SW-T4S\HoningMachineConfig\bin\Debug\SNDWAY_SW-T4S.exe
+E:\Projects\LaserMesure\SNDWAY_SW-T4S\HoningMachineConfig\bin\Debug\SNDWAY_SW-T4S.pdb
+E:\Projects\LaserMesure\SNDWAY_SW-T4S\HoningMachineConfig\obj\Debug\SNDWAY_SW-T4S.csprojResolveAssemblyReference.cache
+E:\Projects\LaserMesure\SNDWAY_SW-T4S\HoningMachineConfig\obj\Debug\HoningMachineConfig.MainForm1.resources
+E:\Projects\LaserMesure\SNDWAY_SW-T4S\HoningMachineConfig\obj\Debug\HoningMachineConfig.Properties.Resources.resources
+E:\Projects\LaserMesure\SNDWAY_SW-T4S\HoningMachineConfig\obj\Debug\SNDWAY_SW-T4S.csproj.GenerateResource.Cache
+E:\Projects\LaserMesure\SNDWAY_SW-T4S\HoningMachineConfig\obj\Debug\SNDWAY_SW-T4S.exe
+E:\Projects\LaserMesure\SNDWAY_SW-T4S\HoningMachineConfig\obj\Debug\SNDWAY_SW-T4S.pdb

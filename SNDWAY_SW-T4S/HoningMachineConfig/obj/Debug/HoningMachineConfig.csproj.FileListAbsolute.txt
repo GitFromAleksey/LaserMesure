@@ -1,0 +1,36 @@
+c:\users\hp-g7000\documents\visual studio 2012\Projects\HoningMachineConfig\HoningMachineConfig\bin\Debug\HoningMachineConfig.exe.config
+c:\users\hp-g7000\documents\visual studio 2012\Projects\HoningMachineConfig\HoningMachineConfig\bin\Debug\HoningMachineConfig.exe
+c:\users\hp-g7000\documents\visual studio 2012\Projects\HoningMachineConfig\HoningMachineConfig\bin\Debug\HoningMachineConfig.pdb
+c:\users\hp-g7000\documents\visual studio 2012\Projects\HoningMachineConfig\HoningMachineConfig\obj\Debug\HoningMachineConfig.csprojResolveAssemblyReference.cache
+c:\users\hp-g7000\documents\visual studio 2012\Projects\HoningMachineConfig\HoningMachineConfig\obj\Debug\HoningMachineConfig.MainForm1.resources
+c:\users\hp-g7000\documents\visual studio 2012\Projects\HoningMachineConfig\HoningMachineConfig\obj\Debug\HoningMachineConfig.Properties.Resources.resources
+c:\users\hp-g7000\documents\visual studio 2012\Projects\HoningMachineConfig\HoningMachineConfig\obj\Debug\HoningMachineConfig.csproj.GenerateResource.Cache
+c:\users\hp-g7000\documents\visual studio 2012\Projects\HoningMachineConfig\HoningMachineConfig\obj\Debug\HoningMachineConfig.exe
+c:\users\hp-g7000\documents\visual studio 2012\Projects\HoningMachineConfig\HoningMachineConfig\obj\Debug\HoningMachineConfig.pdb
+C:\Users\HP-G7000\eclipse-workspace\HoningMachine\HoningMachineConfig\HoningMachineConfig\bin\Debug\HoningMachineConfig.exe.config
+C:\Users\HP-G7000\eclipse-workspace\HoningMachine\HoningMachineConfig\HoningMachineConfig\obj\Debug\HoningMachineConfig.exe
+C:\Users\HP-G7000\eclipse-workspace\HoningMachine\HoningMachineConfig\HoningMachineConfig\obj\Debug\HoningMachineConfig.pdb
+C:\Users\HP-G7000\eclipse-workspace\HoningMachine\HoningMachineConfig\HoningMachineConfig\bin\Debug\HoningMachineConfig.exe
+C:\Users\HP-G7000\eclipse-workspace\HoningMachine\HoningMachineConfig\HoningMachineConfig\bin\Debug\HoningMachineConfig.pdb
+C:\Users\HP-G7000\eclipse-workspace\HoningMachine\HoningMachineConfig\HoningMachineConfig\obj\Debug\HoningMachineConfig.MainForm1.resources
+C:\Users\HP-G7000\eclipse-workspace\HoningMachine\HoningMachineConfig\HoningMachineConfig\obj\Debug\HoningMachineConfig.Properties.Resources.resources
+C:\Users\HP-G7000\eclipse-workspace\HoningMachine\HoningMachineConfig\HoningMachineConfig\obj\Debug\HoningMachineConfig.csproj.GenerateResource.Cache
+C:\Users\HP-G7000\eclipse-workspace\HoningMachine\HoningMachineConfig\HoningMachineConfig\obj\Debug\HoningMachineConfig.csprojResolveAssemblyReference.cache
+C:\git\HoningMachine\HoningMachineConfig\HoningMachineConfig\bin\Debug\HoningMachineConfig.exe.config
+C:\git\HoningMachine\HoningMachineConfig\HoningMachineConfig\bin\Debug\HoningMachineConfig.exe
+C:\git\HoningMachine\HoningMachineConfig\HoningMachineConfig\bin\Debug\HoningMachineConfig.pdb
+C:\git\HoningMachine\HoningMachineConfig\HoningMachineConfig\obj\Debug\HoningMachineConfig.csprojResolveAssemblyReference.cache
+C:\git\HoningMachine\HoningMachineConfig\HoningMachineConfig\obj\Debug\HoningMachineConfig.MainForm1.resources
+C:\git\HoningMachine\HoningMachineConfig\HoningMachineConfig\obj\Debug\HoningMachineConfig.Properties.Resources.resources
+C:\git\HoningMachine\HoningMachineConfig\HoningMachineConfig\obj\Debug\HoningMachineConfig.csproj.GenerateResource.Cache
+C:\git\HoningMachine\HoningMachineConfig\HoningMachineConfig\obj\Debug\HoningMachineConfig.exe
+C:\git\HoningMachine\HoningMachineConfig\HoningMachineConfig\obj\Debug\HoningMachineConfig.pdb
+E:\Projects\LaserMesure\SNDWAY_SW-T4S\HoningMachineConfig\obj\Debug\HoningMachineConfig.csprojResolveAssemblyReference.cache
+E:\Projects\LaserMesure\SNDWAY_SW-T4S\HoningMachineConfig\obj\Debug\HoningMachineConfig.MainForm1.resources
+E:\Projects\LaserMesure\SNDWAY_SW-T4S\HoningMachineConfig\obj\Debug\HoningMachineConfig.Properties.Resources.resources
+E:\Projects\LaserMesure\SNDWAY_SW-T4S\HoningMachineConfig\obj\Debug\HoningMachineConfig.csproj.GenerateResource.Cache
+E:\Projects\LaserMesure\SNDWAY_SW-T4S\HoningMachineConfig\obj\Debug\HoningMachineConfig.exe
+E:\Projects\LaserMesure\SNDWAY_SW-T4S\HoningMachineConfig\bin\Debug\HoningMachineConfig.exe.config
+E:\Projects\LaserMesure\SNDWAY_SW-T4S\HoningMachineConfig\bin\Debug\HoningMachineConfig.exe
+E:\Projects\LaserMesure\SNDWAY_SW-T4S\HoningMachineConfig\bin\Debug\HoningMachineConfig.pdb
+E:\Projects\LaserMesure\SNDWAY_SW-T4S\HoningMachineConfig\obj\Debug\HoningMachineConfig.pdb
