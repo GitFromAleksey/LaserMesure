@@ -8,9 +8,14 @@
 #include "parser.h"
 #include <SoftwareSerial.h>
 #include "LedControl.h" //  Подключаем библиотеку
+#include "SwT4sProtocolBuilder.h"
+
 LedControl lc = LedControl(12, 11, 10, 1); // используемы пины ардуины для подключения, и сколько драйверов в цепочке
+
 #define DIST_SIZE 4u
 char dist[DIST_SIZE];  // массив для отображения расстояния
+#define TX_BUF_SIZE   20u
+char txBuffer[TX_BUF_SIZE];
 
 // данные для калибровки расстояния
 #define SIZE_REAL      4997.0f   // реальный измеренный размер
@@ -23,7 +28,7 @@ char dist[DIST_SIZE];  // массив для отображения расст�
 #define LASER_SLOW_MESURE_CMD (char)'D'
 #define LASER_FAST_MESURE_CMD (char)'F'
 #define LASER_GET_INFO_CMD    (char)'S'
-#define END_OF_PACKET         (char)'\n'
+#define END_OF_PACKET         (char)'#' // '\n'
 #define LASER_MESURE_CMD      LASER_SLOW_MESURE_CMD
 
 #define DEFAULT_BLINK_PERIOD  500u // ms
@@ -39,15 +44,16 @@ bool isInputData = false;
 cBlink ledBlink(DEFAULT_BLINK_PERIOD);
 cTimeout timeOut;
 cParser parser(LASER_MESURE_CMD);
+cSwT4sProtocolBuilder swT4sProtocolBuilder;
 
 SoftwareSerial mySerial(8, 9); // RX, TX
 
 void setup()
 {
-  Serial.begin(19200);
+  Serial.begin(9600);
 
 #ifdef UART_DEBUG
-  mySerial.begin(19200);
+  mySerial.begin(9600);
   parser.SetSerial(&mySerial);
 //  mySerial.println("Hello, world?");
 #endif
@@ -55,7 +61,7 @@ void setup()
   //Инициируем MAX7219
   lc.shutdown(0, false); // включаем дисплей энергосбережение дисплей
   lc.setIntensity(0, 15); // устанавливаем яркость (0-минимум, 15-максимум)
-  lc.clearDisplay(0);// очищаем дисплей
+  lc.clearDisplay(0); // очищаем дисплей
   delay(500);
 
   pinMode(KEY_NULL_PIN, INPUT);
@@ -70,9 +76,9 @@ void setup()
 
 void LaserInit()
 {
-  Serial.write(LASER_OPEN_CMD);
-  delay(10);
-  Serial.write(LASER_MESURE_CMD);
+//  Serial.write(LASER_OPEN_CMD);
+//  delay(10);
+//  Serial.write(LASER_MESURE_CMD);
   timeOut.TimeoutStart(DEFAULT_TIMEOUT);
   ledBlink.LedOn();
 }
@@ -93,6 +99,14 @@ void IndicatorShow()
   {
     //lc.setDigit(0, a, dist[a] , false);
     lc.setChar(0, a, dist[a] , false);
+  }
+}
+
+void SerialSendData(char* buf, int bufSize)
+{
+  for(int i = 0; i < bufSize; ++i)
+  {
+    Serial.write(buf[i]);
   }
 }
 
@@ -139,7 +153,13 @@ void loop()
   {
     ledBlink.LedOff();
     isInputData = false;
-    Serial.write(LASER_OPEN_CMD);
+
+    int dataSize = swT4sProtocolBuilder.KeyRead(txBuffer, TX_BUF_SIZE);//Serial.write(LASER_OPEN_CMD);//txBuffer
+    SerialSendData(txBuffer, dataSize);
+    SerialSendData(txBuffer, dataSize);
+    dataSize = swT4sProtocolBuilder.KeyReadDisplayValue(txBuffer, TX_BUF_SIZE);
+    SerialSendData(txBuffer, dataSize);
+    
     timeOut.TimeoutStart(DEFAULT_TIMEOUT);
     parser.setParseDigitValue(EepromRead(EEPROM_NULL_VALUE_ADDRESS)); // выводим все 0-ли при инициализации
     //IndicatorClear();
@@ -150,7 +170,7 @@ void loop()
   {
     delay(10);
     isInputData = false;
-    Serial.write(LASER_MESURE_CMD);
+//    Serial.write(LASER_MESURE_CMD);
     ledBlink.LedOff();
   }
 

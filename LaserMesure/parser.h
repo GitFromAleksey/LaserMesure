@@ -10,12 +10,12 @@ class cParser
 public:
   SoftwareSerial *serial; // указатель на экземпляр COM порта для отправки логов
   
-  cParser(char laserCmd): m_ParseDigit(0), m_NullDigit(0), m_IsData(false), m_CorrectCoef(1.0)
+  cParser(char laserCmd): m_ParseDigit(0), m_NullDigit(0), m_IsData(false), m_CorrectCoef(1.0),m_RxBufCnt(0)
   {
     m_OutCharBuf[0] = m_OutCharBuf[1] = m_OutCharBuf[2] = m_OutCharBuf[3] = 8;
     m_StringBuf = "";
-    m_BeginSubstr = laserCmd;
-    m_BeginSubstr = m_BeginSubstr + ": ";
+    m_BeginSubstr = "ATD"; // laserCmd;
+//    m_BeginSubstr = m_BeginSubstr + ": ";
   }
   ~cParser(){}
 
@@ -26,7 +26,8 @@ public:
 
   void getArray(char *dist)
   {
-    int tmp =  (m_NullDigit - m_ParseDigit) * m_CorrectCoef;
+//    int tmp =  (m_NullDigit - m_ParseDigit) * m_CorrectCoef;
+    int tmp = m_ParseDigit;
     if(tmp < 0)
     {
       //tmp = 8888;
@@ -51,42 +52,56 @@ public:
 
   void addNextChar(char ch)
   {
-    if(ch == '\n')
+    int tmp = 0;
+    
+    //if(ch == '\n')
+    if(ch == '#')
     {
-      if(m_StringBuf.lastIndexOf(m_BeginSubstr) > -1)
+//      if( (tmp = m_StringBuf.lastIndexOf(m_BeginSubstr)) > -1)
+      if( (tmp = m_StringBuf.indexOf("ATD")) > -1)
       {
-        m_StringBuf.replace(m_BeginSubstr,"");
-        if(m_StringBuf.lastIndexOf("m,") > -1)
-        {
-          m_StringBuf.replace(".","");
+        m_ParseDigit = 0;
+        m_ParseDigit |= m_RxBuf[3]<<24;
+        m_ParseDigit |= m_RxBuf[4]<<16;
+        m_ParseDigit |= m_RxBuf[5]<<8;
+        m_ParseDigit |= m_RxBuf[6];
+        m_ParseDigit /= 10;
+        m_IsData = true;
+        
+//        m_StringBuf.replace(m_BeginSubstr,"");
+//        if(m_StringBuf.lastIndexOf("ATD") > -1)
+//        {
+//          m_StringBuf.replace(".","");
 
-          m_StringOut  = "";
-          m_StringOut += m_StringBuf.charAt(0);
-          m_StringOut += m_StringBuf.charAt(1);
-          m_StringOut += m_StringBuf.charAt(2);
-          m_StringOut += m_StringBuf.charAt(3);
+//          m_StringOut  = "";
+//          m_StringOut += m_StringBuf.charAt(0);
+//          m_StringOut += m_StringBuf.charAt(1);
+//          m_StringOut += m_StringBuf.charAt(2);
+//          m_StringOut += m_StringBuf.charAt(3);
+//
+//          m_OutCharBuf[0] = CharToInt(m_StringBuf.charAt(0));
+//          m_OutCharBuf[1] = CharToInt(m_StringBuf.charAt(1));
+//          m_OutCharBuf[2] = CharToInt(m_StringBuf.charAt(2));
+//          m_OutCharBuf[3] = CharToInt(m_StringBuf.charAt(3));
 
-          m_OutCharBuf[0] = CharToInt(m_StringBuf.charAt(0));
-          m_OutCharBuf[1] = CharToInt(m_StringBuf.charAt(1));
-          m_OutCharBuf[2] = CharToInt(m_StringBuf.charAt(2));
-          m_OutCharBuf[3] = CharToInt(m_StringBuf.charAt(3));
-
-          m_ParseDigit = 0;
-          m_ParseDigit += m_OutCharBuf[0] * 1000;
-          m_ParseDigit += m_OutCharBuf[1] * 100;
-          m_ParseDigit += m_OutCharBuf[2] * 10;
-          m_ParseDigit += m_OutCharBuf[3];
-
-          m_IsData = true;
-        }
+//          m_ParseDigit = 0;
+//          m_OutCharBuf[0] * 1000;
+//          m_OutCharBuf[1] * 100;
+//          m_OutCharBuf[2] * 10;
+//          m_OutCharBuf[3];
+//
+//          m_IsData = true;
+//        }
         serial->println(m_StringBuf);
         serial->println(m_StringOut);
       }
       m_StringBuf = "";
+      m_RxBufCnt = 0;
     }
     else
     {
       m_StringBuf += ch;
+      m_RxBuf[m_RxBufCnt++] = ch;
       m_IsData = false;
     }
   }
@@ -106,6 +121,8 @@ private:
   int m_ParseDigit;   // ответ от лазера в виде числа
   int m_NullDigit;    // нулевая координата, число от которого вычитается m_ParseDigit. Это и есть искомое расстояние
   int m_OutCharBuf[4];  // промежуточный буфер для конвертации строки в число
+  uint8_t m_RxBufCnt;
+  uint8_t m_RxBuf[20];
   bool m_IsData;        // флаг готовых данных
   float m_CorrectCoef;  // корректирующий коэффициент если набегает ошибка
 
