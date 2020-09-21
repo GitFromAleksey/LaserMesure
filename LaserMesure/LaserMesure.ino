@@ -9,6 +9,7 @@
 #include <SoftwareSerial.h>
 #include "LedControl.h" //  Подключаем библиотеку
 #include "SwT4sProtocolBuilder.h"
+#include "SwT4sProtocolParser.h"
 
 LedControl lc = LedControl(12, 11, 10, 1); // используемы пины ардуины для подключения, и сколько драйверов в цепочке
 
@@ -45,6 +46,7 @@ cBlink ledBlink(DEFAULT_BLINK_PERIOD);
 cTimeout timeOut;
 cParser parser(LASER_MESURE_CMD);
 cSwT4sProtocolBuilder swT4sProtocolBuilder;
+SwT4sProtocolParser swT4sProtocolParser;
 
 SoftwareSerial mySerial(8, 9); // RX, TX
 
@@ -94,7 +96,8 @@ void IndicatorClear()
 void IndicatorShow()
 {
   parser.getArray(dist);
-
+//  swT4sProtocolParser.getArray(dist);
+  
   for (int a = 0; a < 4; a++)
   {
     //lc.setDigit(0, a, dist[a] , false);
@@ -121,6 +124,7 @@ void serialEvent()
    // mySerial.write(tmp);
 #endif
     parser.addNextChar(tmp);
+    swT4sProtocolParser.AddData(tmp);
     if(tmp == END_OF_PACKET)
     {
       isInputData = true;

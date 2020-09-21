@@ -1,10 +1,10 @@
 /*
- * cParser.cpp
+ * SwT4sProtocolParser.cpp
  *
- *  Created on: 21 сент. 2020 г.
+ *  Created on: 21 пїЅпїЅпїЅпїЅ. 2020 пїЅ.
  *      Author: borzenkov
  */
-#include "cParser.h"
+#include "SwT4sProtocolParser.h"
 
 //#define DEBUG
 
@@ -12,17 +12,11 @@ const char BEGIN_SUBSTR[] = "ATD";
 const char END_SUBSTR[] = "#";
 const unsigned char DATA_LEN = 17;
 
-cParser::cParser() : m_RxBufCnt(0)
-{
+SwT4sProtocolParser::SwT4sProtocolParser() : m_ParseDigit(0), m_RxBufCnt(0){}
 
-}
+SwT4sProtocolParser::~SwT4sProtocolParser(){}
 
-cParser::~cParser()
-{
-
-}
-
-void cParser::AddData(unsigned char data)
+void SwT4sProtocolParser::AddData(unsigned char data)
 {
 	m_RxBuf[m_RxBufCnt++] = data;
 	if(m_RxBufCnt == RX_BUF_SIZE)
@@ -31,21 +25,47 @@ void cParser::AddData(unsigned char data)
 	int index = RxBufCheck(m_RxBuf, RX_BUF_SIZE);
 	if( index >= 0 )
 	{
-		unsigned int result = 0;
+		int result = 0;
 
 		result |= m_RxBuf[index+3]<<24;
 		result |= m_RxBuf[index+4]<<16;
 		result |= m_RxBuf[index+5]<<8;
 		result |= m_RxBuf[index+6];
 
+    m_ParseDigit = result;
 		m_RxBufCnt = 0;
-		std::cout << "packet is find, result = " << result << std::endl;
 	}
+}
+// ----------------------------------------------------------------------------
+void SwT4sProtocolParser::getArray(char *dist)
+{
+//    int tmp =  (m_NullDigit - m_ParseDigit) * m_CorrectCoef;
+  int tmp = m_ParseDigit;
+  if(tmp < 0)
+  {
+    //tmp = 8888;
+    tmp = abs(tmp);
+    dist[3] = '-';
+    dist[0] = tmp%10;
+    tmp = tmp/10;
+    dist[1] = tmp%10;
+    tmp = tmp/10;
+    dist[2] = tmp%10;
+  }
+  else
+  {
+    dist[0] = tmp%10;
+    tmp = tmp/10;
+    dist[1] = tmp%10;
+    tmp = tmp/10;
+    dist[2] = tmp%10;
+    dist[3] = tmp/10;
+  }
 }
 // ----------------------------------------------------------------------------
 // private:
 // ----------------------------------------------------------------------------
-int cParser::RxBufCheck(unsigned char* buf, unsigned char size)
+int SwT4sProtocolParser::RxBufCheck(unsigned char* buf, unsigned char size)
 {
 	bool is_find_begin = false;
 	bool is_find_end = false;
@@ -81,9 +101,6 @@ int cParser::RxBufCheck(unsigned char* buf, unsigned char size)
 		data_len = index_end - index_begin;
 		if((DATA_LEN-1) == data_len)
 		{
-#ifdef DEBUG
-			std::cout << "DATA_LEN == data_len" << std::endl;
-#endif
 			return index_begin;
 		}
 	}

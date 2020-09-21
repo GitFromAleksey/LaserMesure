@@ -9,7 +9,7 @@ class cSwT4sProtocolBuilder
 
     int KeyRead(char* buf, int bufSize);
     int KeyReadDisplayValue(char* buf, int bufSize);
-    
+
 	private:
     
     int ProtocolSerealize(char* buf, int bufSize, char* keyCode);
