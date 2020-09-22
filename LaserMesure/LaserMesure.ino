@@ -2,7 +2,7 @@
 
 //#include <SPI.h>
 #include <stdio.h>
-#include "stdinout.h"
+//#include "stdinout.h"
 #include "blink.h"
 #include "timeout.h"
 #include "parser.h"
@@ -24,16 +24,19 @@ char txBuffer[TX_BUF_SIZE];
 
 #define UART_DEBUG
 
-#define LASER_OPEN_CMD        (char)'O'
-#define LASER_CLOSE_CMD       (char)'C'
-#define LASER_SLOW_MESURE_CMD (char)'D'
-#define LASER_FAST_MESURE_CMD (char)'F'
-#define LASER_GET_INFO_CMD    (char)'S'
-#define END_OF_PACKET         (char)'#' // '\n'
-#define LASER_MESURE_CMD      LASER_SLOW_MESURE_CMD
+//#define LASER_OPEN_CMD        (char)'O'
+//#define LASER_CLOSE_CMD       (char)'C'
+//#define LASER_SLOW_MESURE_CMD (char)'D'
+//#define LASER_FAST_MESURE_CMD (char)'F'
+//#define LASER_GET_INFO_CMD    (char)'S'
+//#define END_OF_PACKET         (char)'#' // '\n'
+//#define LASER_MESURE_CMD      LASER_SLOW_MESURE_CMD
 
 #define DEFAULT_BLINK_PERIOD  500u // ms
-#define DEFAULT_TIMEOUT       3000u // ms
+#define DEFAULT_TIMEOUT       1000u // ms
+
+#define TIMER_SEND_KEY        1000u
+#define TIMER_SEND_GET_DATA   500u
 
 #define KEY_NULL_PIN          13u
 
@@ -44,9 +47,11 @@ bool isInputData = false;
 
 cBlink ledBlink(DEFAULT_BLINK_PERIOD);
 cTimeout timeOut;
-cParser parser(LASER_MESURE_CMD);
+cTimeout timerKey;
+cTimeout timerGetData;
+cParser parser(0);
 cSwT4sProtocolBuilder swT4sProtocolBuilder;
-SwT4sProtocolParser swT4sProtocolParser;
+//SwT4sProtocolParser swT4sProtocolParser;
 
 SoftwareSerial mySerial(8, 9); // RX, TX
 
@@ -78,9 +83,6 @@ void setup()
 
 void LaserInit()
 {
-//  Serial.write(LASER_OPEN_CMD);
-//  delay(10);
-//  Serial.write(LASER_MESURE_CMD);
   timeOut.TimeoutStart(DEFAULT_TIMEOUT);
   ledBlink.LedOn();
 }
@@ -96,7 +98,6 @@ void IndicatorClear()
 void IndicatorShow()
 {
   parser.getArray(dist);
-//  swT4sProtocolParser.getArray(dist);
   
   for (int a = 0; a < 4; a++)
   {
@@ -124,14 +125,6 @@ void serialEvent()
    // mySerial.write(tmp);
 #endif
     parser.addNextChar(tmp);
-    swT4sProtocolParser.AddData(tmp);
-    if(tmp == END_OF_PACKET)
-    {
-      isInputData = true;
-      
-      ledBlink.LedOn();
-      IndicatorShow();
-    }
   }
   
   timeOut.TimeoutStart(DEFAULT_TIMEOUT);
@@ -152,31 +145,54 @@ void loop()
 {
   //ledBlink.run();
   timeOut.run();
+  timerKey.run();
+  timerGetData.run();
+
+  if(timerKey.isTimeOver())
+  {
+    timerKey.TimeoutStart(TIMER_SEND_KEY);
+    int dataSize = swT4sProtocolBuilder.KeyRead(txBuffer, TX_BUF_SIZE);
+    delay(10);
+    dataSize = swT4sProtocolBuilder.KeyRead(txBuffer, TX_BUF_SIZE);
+    SerialSendData(txBuffer, dataSize);
+
+    timerGetData.TimeoutStart(TIMER_SEND_KEY);
+  }
+
+  if(timerGetData.isTimeOver())
+  {
+    IndicatorShow();
+    
+    int dataSize = swT4sProtocolBuilder.KeyReadDisplayValue(txBuffer, TX_BUF_SIZE);
+    SerialSendData(txBuffer, dataSize);
+  }
 
   if(timeOut.isTimeOver())
   {
     ledBlink.LedOff();
     isInputData = false;
 
-    int dataSize = swT4sProtocolBuilder.KeyRead(txBuffer, TX_BUF_SIZE);//Serial.write(LASER_OPEN_CMD);//txBuffer
-    SerialSendData(txBuffer, dataSize);
-    SerialSendData(txBuffer, dataSize);
-    dataSize = swT4sProtocolBuilder.KeyReadDisplayValue(txBuffer, TX_BUF_SIZE);
-    SerialSendData(txBuffer, dataSize);
+//    int dataSize = swT4sProtocolBuilder.KeyRead(txBuffer, TX_BUF_SIZE);
+//    SerialSendData(txBuffer, dataSize);
+//    delay(10);
+//    SerialSendData(txBuffer, dataSize);
+//    delay(10);
+//    dataSize = swT4sProtocolBuilder.KeyReadDisplayValue(txBuffer, TX_BUF_SIZE);
+//    SerialSendData(txBuffer, dataSize);
     
     timeOut.TimeoutStart(DEFAULT_TIMEOUT);
-    parser.setParseDigitValue(EepromRead(EEPROM_NULL_VALUE_ADDRESS)); // выводим все 0-ли при инициализации
+    //parser.setParseDigitValue(EepromRead(EEPROM_NULL_VALUE_ADDRESS)); // выводим все 0-ли при инициализации
     //IndicatorClear();
     IndicatorShow();
   }
 
-  if(isInputData)
-  {
-    delay(10);
-    isInputData = false;
-//    Serial.write(LASER_MESURE_CMD);
-    ledBlink.LedOff();
-  }
+//  if(isInputData)
+//  {
+//    delay(10);
+//    isInputData = false;
+////    Serial.write(LASER_MESURE_CMD);
+//    ledBlink.LedOff();
+//  }
 
   if(digitalRead(KEY_NULL_PIN) == LOW)
   {
