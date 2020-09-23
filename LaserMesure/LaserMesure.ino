@@ -24,17 +24,10 @@ char txBuffer[TX_BUF_SIZE];
 
 #define UART_DEBUG
 
-//#define LASER_OPEN_CMD        (char)'O'
-//#define LASER_CLOSE_CMD       (char)'C'
-//#define LASER_SLOW_MESURE_CMD (char)'D'
-//#define LASER_FAST_MESURE_CMD (char)'F'
-//#define LASER_GET_INFO_CMD    (char)'S'
-//#define END_OF_PACKET         (char)'#' // '\n'
-//#define LASER_MESURE_CMD      LASER_SLOW_MESURE_CMD
-
 #define DEFAULT_BLINK_PERIOD  500u // ms
 #define DEFAULT_TIMEOUT       1000u // ms
 
+uint8_t RequestMode = 0;
 #define TIMER_SEND_KEY        1000u
 #define TIMER_SEND_GET_DATA   500u
 
@@ -47,8 +40,7 @@ bool isInputData = false;
 
 cBlink ledBlink(DEFAULT_BLINK_PERIOD);
 cTimeout timeOut;
-cTimeout timerKey;
-cTimeout timerGetData;
+cTimeout timerRequest;
 cParser parser(0);
 cSwT4sProtocolBuilder swT4sProtocolBuilder;
 //SwT4sProtocolParser swT4sProtocolParser;
@@ -120,14 +112,10 @@ void serialEvent()
 
   while(Serial.available())
   {
-#ifdef UART_DEBUG
-    tmp = Serial.read();
-   // mySerial.write(tmp);
-#endif
     parser.addNextChar(tmp);
   }
   
-  timeOut.TimeoutStart(DEFAULT_TIMEOUT);
+//  timeOut.TimeoutStart(DEFAULT_TIMEOUT);
 }
 
 void EepromSave(int address, int val)
@@ -144,33 +132,49 @@ int EepromRead(int address)
 void loop()
 {
   //ledBlink.run();
-  timeOut.run();
-  timerKey.run();
-  timerGetData.run();
+//  timeOut.run();
+  timerRequest.run();
 
-  if(timerKey.isTimeOver())
+  if(timerRequest.isTimeOver())
   {
-    timerKey.TimeoutStart(TIMER_SEND_KEY);
-    int dataSize = swT4sProtocolBuilder.KeyRead(txBuffer, TX_BUF_SIZE);
-    delay(10);
-    dataSize = swT4sProtocolBuilder.KeyRead(txBuffer, TX_BUF_SIZE);
-    SerialSendData(txBuffer, dataSize);
-
-    timerGetData.TimeoutStart(TIMER_SEND_KEY);
-  }
-
-  if(timerGetData.isTimeOver())
-  {
-    IndicatorShow();
+    int dataSize = 0;
     
-    int dataSize = swT4sProtocolBuilder.KeyReadDisplayValue(txBuffer, TX_BUF_SIZE);
-    SerialSendData(txBuffer, dataSize);
+    switch(RequestMode)
+    {
+      case 0:
+        // отправка кнопки READ
+        IndicatorShow();
+        
+        dataSize = swT4sProtocolBuilder.KeyRead(txBuffer, TX_BUF_SIZE);
+        SerialSendData(txBuffer, dataSize);
+        timerRequest.TimeoutStart(500);
+        RequestMode = 1;
+        break;
+      case 1:
+        // отправка кнопки READ
+        dataSize = swT4sProtocolBuilder.KeyRead(txBuffer, TX_BUF_SIZE);
+        SerialSendData(txBuffer, dataSize);
+        timerRequest.TimeoutStart(2000);
+        RequestMode = 2;
+        break;
+      case 2:
+        // запрос данных
+        dataSize = swT4sProtocolBuilder.KeyReadDisplayValue(txBuffer, TX_BUF_SIZE);
+        SerialSendData(txBuffer, dataSize);
+        timerRequest.TimeoutStart(1000);
+        RequestMode = 0;
+        break;
+      default:
+        RequestMode = 0;
+        break;
+    }
+    
   }
 
-  if(timeOut.isTimeOver())
-  {
-    ledBlink.LedOff();
-    isInputData = false;
+//  if(timeOut.isTimeOver())
+//  {
+//    ledBlink.LedOff();
+//    isInputData = false;
 
 //    int dataSize = swT4sProtocolBuilder.KeyRead(txBuffer, TX_BUF_SIZE);
 //    SerialSendData(txBuffer, dataSize);
@@ -180,11 +184,11 @@ void loop()
 //    dataSize = swT4sProtocolBuilder.KeyReadDisplayValue(txBuffer, TX_BUF_SIZE);
 //    SerialSendData(txBuffer, dataSize);
     
-    timeOut.TimeoutStart(DEFAULT_TIMEOUT);
+//    timeOut.TimeoutStart(DEFAULT_TIMEOUT);
     //parser.setParseDigitValue(EepromRead(EEPROM_NULL_VALUE_ADDRESS)); // выводим все 0-ли при инициализации
     //IndicatorClear();
-    IndicatorShow();
-  }
+//    IndicatorShow();
+//  }
 
 //  if(isInputData)
 //  {

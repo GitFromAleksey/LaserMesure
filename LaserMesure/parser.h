@@ -34,6 +34,7 @@ public:
   {
 //    int tmp =  (m_NullDigit - m_ParseDigit) * m_CorrectCoef;
     int tmp = m_ParseDigit;
+
     //m_ParseDigit = 0;
     if(tmp < 0)
     {
@@ -61,9 +62,14 @@ public:
   {
     m_RxBuf[m_RxBufCnt++] = data;
     if(m_RxBufCnt == _RX_BUF_SIZE)
+    {
+      ClearBuf(m_RxBuf, _RX_BUF_SIZE);
       m_RxBufCnt = 0;
+    }
   
-    int index = RxBufCheck(m_RxBuf, _RX_BUF_SIZE);
+    int index = -1;
+    index = RxBufCheck(m_RxBuf, _RX_BUF_SIZE);
+
     if( index >= 0 )
     {
       int result = 0;
@@ -72,12 +78,11 @@ public:
       result |= m_RxBuf[index+4]<<16;
       result |= m_RxBuf[index+5]<<8;
       result |= m_RxBuf[index+6];
-
-      ClearBuf(m_RxBuf, _RX_BUF_SIZE);
       m_ParseDigit = result/10;
-      m_RxBufCnt = 0;
-
       m_IsData = true;
+            
+      ClearBuf(m_RxBuf, _RX_BUF_SIZE);
+      m_RxBufCnt = 0;
     }
     else
     {
@@ -85,39 +90,36 @@ public:
     }
   }
 // -----------------------------------------------------------------------------
-  void _addNextChar(char ch)
-  {
-    int tmp = 0;
-
-    int index = RxBufCheck(m_RxBuf, _RX_BUF_SIZE);
-    
-    //if(ch == '\n')
-    if(ch == '#')
-    {
+//  void addNextChar(char ch)
+//  {
+//    int tmp = 0;
+//
+////    int index = RxBufCheck(m_RxBuf, _RX_BUF_SIZE);
+//    
+//    //if(ch == '\n')
+//    if(ch == '#')
+//    {
 //      if( (tmp = m_StringBuf.lastIndexOf(m_BeginSubstr)) > -1)
-      if( (tmp = m_StringBuf.indexOf("ATD")) > -1)
-      {
-        m_ParseDigit = 0;
-        m_ParseDigit |= m_RxBuf[3]<<24;
-        m_ParseDigit |= m_RxBuf[4]<<16;
-        m_ParseDigit |= m_RxBuf[5]<<8;
-        m_ParseDigit |= m_RxBuf[6];
-        m_ParseDigit /= 10;
-        m_IsData = true;
-        
-        serial->println(m_StringBuf);
-        serial->println(m_StringOut);
-      }
-      m_StringBuf = "";
-      m_RxBufCnt = 0;
-    }
-    else
-    {
-      m_StringBuf += ch;
-      m_RxBuf[m_RxBufCnt++] = ch;
-      m_IsData = false;
-    }
-  }
+////      if( (tmp = m_StringBuf.indexOf("ATD")) > -1)
+//      {
+//        m_ParseDigit = 0;
+//        m_ParseDigit |= ((unsigned char)m_StringBuf[tmp+3])<<24;
+//        m_ParseDigit |= ((unsigned char)m_StringBuf[tmp+4])<<16;
+//        m_ParseDigit |= ((unsigned char)m_StringBuf[tmp+5])<<8;
+//        m_ParseDigit |= ((unsigned char)m_StringBuf[tmp+6]);
+//        m_ParseDigit /= 10;
+//        m_IsData = true;
+//
+//        m_ParseDigit = 1234;
+//      }
+//      m_StringBuf = "";
+//    }
+//    else
+//    {
+//      m_StringBuf += ch;
+//      m_IsData = false;
+//    }
+//  }
 
   int getCurrentLen()const { return m_ParseDigit; }
 
@@ -126,7 +128,7 @@ public:
   void setParseDigitValue(const int val) { m_ParseDigit = val; }
 
   void setCorrectCoef(const float realSize, const float requiredSize) { m_CorrectCoef = requiredSize/realSize; }
-  
+
 private:
   String m_StringBuf; // для хранения входящей строки ответа от лазера
   String m_BeginSubstr;
@@ -196,16 +198,20 @@ private:
       data_len = index_end - index_begin;
       if((DATA_LEN-1) == data_len)
       {
-        return index_begin;
+        return index_begin; // нужный пакет
+      }
+      else
+      {
+        return -2; // другой пакет
       }
     }
-  
-    return -1;
+    
+    return -1; // нет данных
   }
 
-  void ClearBuf(unsigned char* buf, unsigned char size)
+  void ClearBuf(unsigned char* buf, unsigned char _size)
   {
-    for(int i = 0; i < size; ++i)
+    for(int i = 0; i < _size; ++i)
     {
       buf[i] = 0;
     }
