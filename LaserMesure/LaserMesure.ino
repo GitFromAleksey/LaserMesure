@@ -6,10 +6,10 @@
 #include "blink.h"
 #include "timeout.h"
 #include "parser.h"
-#include <SoftwareSerial.h>
+//#include <SoftwareSerial.h>
 #include "LedControl.h" //  Подключаем библиотеку
 #include "SwT4sProtocolBuilder.h"
-#include "SwT4sProtocolParser.h"
+//#include "SwT4sProtocolParser.h"
 
 LedControl lc = LedControl(12, 11, 10, 1); // используемы пины ардуины для подключения, и сколько драйверов в цепочке
 
@@ -22,7 +22,6 @@ char txBuffer[TX_BUF_SIZE];
 #define SIZE_REAL      4997.0f   // реальный измеренный размер
 #define SIZE_REQUIRED  5000.0f   // требуемый размер
 
-#define UART_DEBUG
 
 #define DEFAULT_BLINK_PERIOD  500u // ms
 #define DEFAULT_TIMEOUT       1000u // ms
@@ -39,23 +38,17 @@ uint8_t RequestMode = 0;
 bool isInputData = false;
 
 cBlink ledBlink(DEFAULT_BLINK_PERIOD);
-cTimeout timeOut;
+//cTimeout timeOut;
 cTimeout timerRequest;
 cParser parser(0);
 cSwT4sProtocolBuilder swT4sProtocolBuilder;
 //SwT4sProtocolParser swT4sProtocolParser;
 
-SoftwareSerial mySerial(8, 9); // RX, TX
+//SoftwareSerial mySerial(8, 9); // RX, TX
 
 void setup()
 {
   Serial.begin(9600);
-
-#ifdef UART_DEBUG
-  mySerial.begin(9600);
-  parser.SetSerial(&mySerial);
-//  mySerial.println("Hello, world?");
-#endif
 
   //Инициируем MAX7219
   lc.shutdown(0, false); // включаем дисплей энергосбережение дисплей
@@ -73,12 +66,6 @@ void setup()
   delay(500);
 }
 
-void LaserInit()
-{
-  timeOut.TimeoutStart(DEFAULT_TIMEOUT);
-  ledBlink.LedOn();
-}
-
 void IndicatorClear()
 {
   for(uint8_t i = 0; i < DIST_SIZE; i++)
@@ -93,7 +80,6 @@ void IndicatorShow()
   
   for (int a = 0; a < 4; a++)
   {
-    //lc.setDigit(0, a, dist[a] , false);
     lc.setChar(0, a, dist[a] , false);
   }
 }
@@ -106,17 +92,10 @@ void SerialSendData(char* buf, int bufSize)
   }
 }
 
-void serialEvent()
-{
-  char tmp;
+//void serialEvent()
+//{
 
-  while(Serial.available())
-  {
-    parser.addNextChar(tmp);
-  }
-  
-//  timeOut.TimeoutStart(DEFAULT_TIMEOUT);
-}
+//}
 
 void EepromSave(int address, int val)
 {
@@ -131,9 +110,12 @@ int EepromRead(int address)
 
 void loop()
 {
-  //ledBlink.run();
-//  timeOut.run();
   timerRequest.run();
+
+  if(Serial.available())
+  {
+    parser.addNextChar(Serial.read());
+  }
 
   if(timerRequest.isTimeOver())
   {
@@ -147,56 +129,29 @@ void loop()
         
         dataSize = swT4sProtocolBuilder.KeyRead(txBuffer, TX_BUF_SIZE);
         SerialSendData(txBuffer, dataSize);
-        timerRequest.TimeoutStart(500);
+        timerRequest.TimeoutStart(15);
         RequestMode = 1;
         break;
       case 1:
         // отправка кнопки READ
         dataSize = swT4sProtocolBuilder.KeyRead(txBuffer, TX_BUF_SIZE);
         SerialSendData(txBuffer, dataSize);
-        timerRequest.TimeoutStart(2000);
+        timerRequest.TimeoutStart(900);
         RequestMode = 2;
         break;
       case 2:
         // запрос данных
         dataSize = swT4sProtocolBuilder.KeyReadDisplayValue(txBuffer, TX_BUF_SIZE);
         SerialSendData(txBuffer, dataSize);
-        timerRequest.TimeoutStart(1000);
         RequestMode = 0;
+        timerRequest.TimeoutStart(20);
         break;
       default:
         RequestMode = 0;
+        timerRequest.TimeoutStart(100);
         break;
-    }
-    
+    } 
   }
-
-//  if(timeOut.isTimeOver())
-//  {
-//    ledBlink.LedOff();
-//    isInputData = false;
-
-//    int dataSize = swT4sProtocolBuilder.KeyRead(txBuffer, TX_BUF_SIZE);
-//    SerialSendData(txBuffer, dataSize);
-//    delay(10);
-//    SerialSendData(txBuffer, dataSize);
-//    delay(10);
-//    dataSize = swT4sProtocolBuilder.KeyReadDisplayValue(txBuffer, TX_BUF_SIZE);
-//    SerialSendData(txBuffer, dataSize);
-    
-//    timeOut.TimeoutStart(DEFAULT_TIMEOUT);
-    //parser.setParseDigitValue(EepromRead(EEPROM_NULL_VALUE_ADDRESS)); // выводим все 0-ли при инициализации
-    //IndicatorClear();
-//    IndicatorShow();
-//  }
-
-//  if(isInputData)
-//  {
-//    delay(10);
-//    isInputData = false;
-////    Serial.write(LASER_MESURE_CMD);
-//    ledBlink.LedOff();
-//  }
 
   if(digitalRead(KEY_NULL_PIN) == LOW)
   {

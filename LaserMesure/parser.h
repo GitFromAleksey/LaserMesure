@@ -1,125 +1,29 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-//#include <string>
-#include "stdinout.h"
-#include <SoftwareSerial.h>
+//#include <string.h>
+//#include "stdinout.h"
+//#include <SoftwareSerial.h>
+#include <stdint.h>
+//#include <math.h>
 
-const unsigned char _RX_BUF_SIZE = 20;
+const unsigned char _RX_BUF_SIZE = 50;
 
 const char BEGIN_SUBSTR[] = "ATD";
 const char END_SUBSTR[] = "#";
-const unsigned char DATA_LEN = 17;
+const unsigned char DATA_LEN = 17; // длина нужного пакета данных
 
 class cParser
 {
 public:
-  SoftwareSerial *serial; // указатель на экземпляр COM порта для отправки логов
 
-  cParser(char laserCmd): m_ParseDigit(0), m_NullDigit(0), m_IsData(false), m_CorrectCoef(1.0),m_RxBufCnt(0)
-  {
-    m_OutCharBuf[0] = m_OutCharBuf[1] = m_OutCharBuf[2] = m_OutCharBuf[3] = 8;
-    m_StringBuf = "";
-    m_BeginSubstr = "ATD"; // laserCmd;
-//    m_BeginSubstr = m_BeginSubstr + ": ";
-  }
-  ~cParser(){}
+  cParser(char laserCmd);
 
-  void SetSerial(SoftwareSerial *serial)
-  {
-    this->serial = serial;
-  }
+  ~cParser();
 
-  void getArray(char *dist)
-  {
-//    int tmp =  (m_NullDigit - m_ParseDigit) * m_CorrectCoef;
-    int tmp = m_ParseDigit;
-
-    //m_ParseDigit = 0;
-    if(tmp < 0)
-    {
-      //tmp = 8888;
-      tmp = abs(tmp);
-      dist[3] = '-';
-      dist[0] = tmp%10;
-      tmp = tmp/10;
-      dist[1] = tmp%10;
-      tmp = tmp/10;
-      dist[2] = tmp%10;
-    }
-    else
-    {
-      dist[0] = tmp%10;
-      tmp = tmp/10;
-      dist[1] = tmp%10;
-      tmp = tmp/10;
-      dist[2] = tmp%10;
-      dist[3] = tmp/10;
-    }
-  }
+  void getArray(char *dist);
 // -----------------------------------------------------------------------------
-  void addNextChar(unsigned char data)
-  {
-    m_RxBuf[m_RxBufCnt++] = data;
-    if(m_RxBufCnt == _RX_BUF_SIZE)
-    {
-      ClearBuf(m_RxBuf, _RX_BUF_SIZE);
-      m_RxBufCnt = 0;
-    }
-  
-    int index = -1;
-    index = RxBufCheck(m_RxBuf, _RX_BUF_SIZE);
-
-    if( index >= 0 )
-    {
-      int result = 0;
-  
-      result |= m_RxBuf[index+3]<<24;
-      result |= m_RxBuf[index+4]<<16;
-      result |= m_RxBuf[index+5]<<8;
-      result |= m_RxBuf[index+6];
-      m_ParseDigit = result/10;
-      m_IsData = true;
-            
-      ClearBuf(m_RxBuf, _RX_BUF_SIZE);
-      m_RxBufCnt = 0;
-    }
-    else
-    {
-      m_IsData = false;
-    }
-  }
-// -----------------------------------------------------------------------------
-//  void addNextChar(char ch)
-//  {
-//    int tmp = 0;
-//
-////    int index = RxBufCheck(m_RxBuf, _RX_BUF_SIZE);
-//    
-//    //if(ch == '\n')
-//    if(ch == '#')
-//    {
-//      if( (tmp = m_StringBuf.lastIndexOf(m_BeginSubstr)) > -1)
-////      if( (tmp = m_StringBuf.indexOf("ATD")) > -1)
-//      {
-//        m_ParseDigit = 0;
-//        m_ParseDigit |= ((unsigned char)m_StringBuf[tmp+3])<<24;
-//        m_ParseDigit |= ((unsigned char)m_StringBuf[tmp+4])<<16;
-//        m_ParseDigit |= ((unsigned char)m_StringBuf[tmp+5])<<8;
-//        m_ParseDigit |= ((unsigned char)m_StringBuf[tmp+6]);
-//        m_ParseDigit /= 10;
-//        m_IsData = true;
-//
-//        m_ParseDigit = 1234;
-//      }
-//      m_StringBuf = "";
-//    }
-//    else
-//    {
-//      m_StringBuf += ch;
-//      m_IsData = false;
-//    }
-//  }
+  void addNextChar(unsigned char data);
 
   int getCurrentLen()const { return m_ParseDigit; }
 
@@ -130,9 +34,6 @@ public:
   void setCorrectCoef(const float realSize, const float requiredSize) { m_CorrectCoef = requiredSize/realSize; }
 
 private:
-  String m_StringBuf; // для хранения входящей строки ответа от лазера
-  String m_BeginSubstr;
-  String m_StringOut; // распарсенный ответ от лазера в виде строки
   int m_ParseDigit;   // ответ от лазера в виде числа
   int m_NullDigit;    // нулевая координата, число от которого вычитается m_ParseDigit. Это и есть искомое расстояние
   int m_OutCharBuf[4];  // промежуточный буфер для конвертации строки в число
@@ -142,80 +43,12 @@ private:
   float m_CorrectCoef;  // корректирующий коэффициент если набегает ошибка
   
 
-  int CharToInt(char ch)
-  {
-    int res = 0;
-    switch(ch)
-    {
-      case '0': res = 0; break;
-      case '1': res = 1; break;
-      case '2': res = 2; break;
-      case '3': res = 3; break;
-      case '4': res = 4; break;
-      case '5': res = 5; break;
-      case '6': res = 6; break;
-      case '7': res = 7; break;
-      case '8': res = 8; break;
-      case '9': res = 9; break;
-      default:           break;
-    }
-    return res;
-  }
+  int CharToInt(char ch);
 
-  int RxBufCheck(unsigned char* buf, unsigned char size)
-  {
-    bool is_find_begin = false;
-    bool is_find_end = false;
-    unsigned char index_begin = 0;
-    unsigned char index_end = 0;
-    unsigned char data_len = 0;
-  
-    for(unsigned char index = 0; index < size; ++index)
-    {
-      if(!is_find_begin)
-        if(buf[index] == BEGIN_SUBSTR[0])
-          if(buf[index+1] == BEGIN_SUBSTR[1])
-            if(buf[index+2] == BEGIN_SUBSTR[2])
-            {
-              is_find_begin = true;
-              index_begin = index;
-              index = index + 3;
-            }
-  
-      if(is_find_begin)
-      {
-        if(buf[index] == END_SUBSTR[0])
-        {
-          is_find_end = true;
-          index_end = index;
-          break;
-        }
-      }
-    }
-  
-    if(is_find_begin && is_find_end)
-    {
-      data_len = index_end - index_begin;
-      if((DATA_LEN-1) == data_len)
-      {
-        return index_begin; // нужный пакет
-      }
-      else
-      {
-        return -2; // другой пакет
-      }
-    }
-    
-    return -1; // нет данных
-  }
+  int RxBufCheck(unsigned char* buf, unsigned char size);
 
-  void ClearBuf(unsigned char* buf, unsigned char _size)
-  {
-    for(int i = 0; i < _size; ++i)
-    {
-      buf[i] = 0;
-    }
-  }
+  void ClearBuf(unsigned char* buf, unsigned char _size);
+
 };
 
 
