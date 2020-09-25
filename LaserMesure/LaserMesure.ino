@@ -26,11 +26,18 @@ char txBuffer[TX_BUF_SIZE];
 #define DEFAULT_BLINK_PERIOD  500u // ms
 #define DEFAULT_TIMEOUT       1000u // ms
 
-uint8_t RequestMode = 0;
-#define TIMER_SEND_KEY        1000u
-#define TIMER_SEND_GET_DATA   500u
+enum eRequestModes
+{
+  firstTimeSendKey,
+  secondTimeSendKey,
+  sendDataRequest
+};
 
-#define KEY_NULL_PIN          13u
+eRequestModes RequestMode = firstTimeSendKey;
+//#define TIMER_SEND_KEY        1000u
+//#define TIMER_SEND_GET_DATA   500u
+
+#define KEY_NULL_PIN          13u // TODO совпадает с выводом светодиода. Нужно переобозначить.
 
 #define EEPROM_NULL_VALUE_ADDRESS   0
 
@@ -44,11 +51,11 @@ cParser parser(0);
 cSwT4sProtocolBuilder swT4sProtocolBuilder;
 //SwT4sProtocolParser swT4sProtocolParser;
 
-//SoftwareSerial mySerial(8, 9); // RX, TX
-
 void setup()
 {
   Serial.begin(9600);
+  while(!Serial);
+//  Serial.setTimeout(200);
 
   //Инициируем MAX7219
   lc.shutdown(0, false); // включаем дисплей энергосбережение дисплей
@@ -56,8 +63,8 @@ void setup()
   lc.clearDisplay(0); // очищаем дисплей
   delay(500);
 
-  pinMode(KEY_NULL_PIN, INPUT);
-  digitalWrite(KEY_NULL_PIN, HIGH);
+//  pinMode(KEY_NULL_PIN, INPUT);
+//  digitalWrite(KEY_NULL_PIN, HIGH);
   
   parser.setParseDigitValue(EepromRead(EEPROM_NULL_VALUE_ADDRESS));
   parser.setNull(EepromRead(EEPROM_NULL_VALUE_ADDRESS));
@@ -86,10 +93,11 @@ void IndicatorShow()
 
 void SerialSendData(char* buf, int bufSize)
 {
-  for(int i = 0; i < bufSize; ++i)
-  {
-    Serial.write(buf[i]);
-  }
+//  for(int i = 0; i < bufSize; ++i)
+//  {
+//    Serial.write(buf[i]);
+//  }
+Serial.write(buf, bufSize);
 }
 
 //void serialEvent()
@@ -110,8 +118,10 @@ int EepromRead(int address)
 
 void loop()
 {
+  int dataSize = 0;
   timerRequest.run();
-
+  ledBlink.run();
+  
   if(Serial.available())
   {
     parser.addNextChar(Serial.read());
@@ -119,55 +129,59 @@ void loop()
 
   if(timerRequest.isTimeOver())
   {
-    int dataSize = 0;
-    
     switch(RequestMode)
     {
-      case 0:
+      if(!Serial)
+      {
+        Serial.end();
+        while(!Serial);
+        Serial.begin(9600);
+      }
+      case firstTimeSendKey:
         // отправка кнопки READ
         IndicatorShow();
         
         dataSize = swT4sProtocolBuilder.KeyRead(txBuffer, TX_BUF_SIZE);
         SerialSendData(txBuffer, dataSize);
         timerRequest.TimeoutStart(15);
-        RequestMode = 1;
+        RequestMode = secondTimeSendKey;
         break;
-      case 1:
+      case secondTimeSendKey:
         // отправка кнопки READ
         dataSize = swT4sProtocolBuilder.KeyRead(txBuffer, TX_BUF_SIZE);
         SerialSendData(txBuffer, dataSize);
-        timerRequest.TimeoutStart(900);
-        RequestMode = 2;
+        RequestMode = sendDataRequest;
+        timerRequest.TimeoutStart(1000);
         break;
-      case 2:
+      case sendDataRequest:
         // запрос данных
         dataSize = swT4sProtocolBuilder.KeyReadDisplayValue(txBuffer, TX_BUF_SIZE);
         SerialSendData(txBuffer, dataSize);
-        RequestMode = 0;
+        RequestMode = firstTimeSendKey;
         timerRequest.TimeoutStart(20);
         break;
       default:
-        RequestMode = 0;
+        RequestMode = firstTimeSendKey;
         timerRequest.TimeoutStart(100);
         break;
     } 
   }
 
-  if(digitalRead(KEY_NULL_PIN) == LOW)
-  {
-    int cnt = 100;
-    while(digitalRead(KEY_NULL_PIN) == LOW)
-    {
-      delay(1);
-      if(cnt-- == 0)
-      {
-        ledBlink.LedOn();
-        IndicatorShow();
-        EepromSave(EEPROM_NULL_VALUE_ADDRESS, parser.getCurrentLen());
-        parser.setNull( parser.getCurrentLen());
-        delay(3000);
-      }
-    }
-  }
+//  if(digitalRead(KEY_NULL_PIN) == LOW)
+//  {
+//    int cnt = 100;
+//    while(digitalRead(KEY_NULL_PIN) == LOW)
+//    {
+//      delay(1);
+//      if(cnt-- == 0)
+//      {
+//        ledBlink.LedOn();
+//        IndicatorShow();
+//        EepromSave(EEPROM_NULL_VALUE_ADDRESS, parser.getCurrentLen());
+//        parser.setNull( parser.getCurrentLen());
+//        delay(3000);
+//      }
+//    }
+//  }
 
 }

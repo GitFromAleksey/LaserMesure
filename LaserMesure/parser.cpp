@@ -57,7 +57,7 @@ void cParser::addNextChar(unsigned char data)
 
   if( index >= 0 )
   {
-    int result = 0;
+    unsigned int result = 0;
 
     result |= m_RxBuf[index+3]<<24;
     result |= m_RxBuf[index+4]<<16;
