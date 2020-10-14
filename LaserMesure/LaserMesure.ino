@@ -46,7 +46,7 @@ bool isInputData = false;
 
 cBlink ledBlink(DEFAULT_BLINK_PERIOD);
 //cTimeout timeOut;
-cTimeout timerRequest;
+cTimeout timerRequest(millis);
 cParser parser(0);
 cSwT4sProtocolBuilder swT4sProtocolBuilder;
 //SwT4sProtocolParser swT4sProtocolParser;
@@ -102,7 +102,6 @@ Serial.write(buf, bufSize);
 
 //void serialEvent()
 //{
-
 //}
 
 void EepromSave(int address, int val)
@@ -120,7 +119,7 @@ void loop()
 {
   int dataSize = 0;
   timerRequest.run();
-  ledBlink.run();
+//  ledBlink.run();
   
   if(Serial.available())
   {
@@ -129,16 +128,12 @@ void loop()
 
   if(timerRequest.isTimeOver())
   {
+    ledBlink.LedToggle();
     switch(RequestMode)
     {
-      if(!Serial)
-      {
-        Serial.end();
-        while(!Serial);
-        Serial.begin(9600);
-      }
       case firstTimeSendKey:
         // отправка кнопки READ
+
         IndicatorShow();
         
         dataSize = swT4sProtocolBuilder.KeyRead(txBuffer, TX_BUF_SIZE);

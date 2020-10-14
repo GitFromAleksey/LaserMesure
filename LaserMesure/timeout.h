@@ -4,43 +4,24 @@
 class cTimeout
 {
 public:
-  cTimeout() : m_TimeoutMs(0), m_CurrentTimeMs(0)
-  {}
-  ~cTimeout(){}
+  cTimeout();
+  cTimeout(unsigned long (*_millis)());
+  ~cTimeout();
 
-  void TimeoutStart(unsigned long timeoutMs)
-  { 
-    m_TimeoutMs = timeoutMs;
-    m_CurrentTimeMs = millis();
-  }
+  void TimeoutStart(unsigned long timeoutMs);
 
-  unsigned long getCurrentTime()
-  { return m_TimeoutMs;}
+  unsigned long getCurrentTime();
 
-  bool isTimeOver()
-  {
-    run();
-    return (m_TimeoutMs == 0);
-  }
+  bool isTimeOver();
   
-  void run()
-  {
-    if(m_TimeoutMs > 0)
-    {
-      if( (millis() - m_CurrentTimeMs) > m_TimeoutMs)
-      {
-        m_TimeoutMs = 0;
-      }
-      else
-      {
-        m_TimeoutMs = m_TimeoutMs - (millis() - m_CurrentTimeMs);
-        m_CurrentTimeMs = millis();
-      }
-    }
-  }
+  void run();
+  
 private:
+  bool m_TimeIsStart;
   unsigned long m_TimeoutMs;
+  unsigned long m_PreviosTimeMs; 
   unsigned long m_CurrentTimeMs;
+  unsigned long (*fmillis)();
 };
 
 #endif /* TIMEOUT_H */
