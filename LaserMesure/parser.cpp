@@ -17,8 +17,8 @@ cParser::~cParser(){}
 //
 void cParser::getArray(char *dist)
 {
-//    int tmp =  (m_NullDigit - m_ParseDigit) * m_CorrectCoef;
-  int tmp = m_ParseDigit;
+  int tmp =  (m_NullDigit - m_ParseDigit) * m_CorrectCoef;
+//  int tmp = m_ParseDigit;
 
   //m_ParseDigit = 0;
   if(tmp < 0)
@@ -57,12 +57,12 @@ void cParser::addNextChar(unsigned char data)
 
   if( index >= 0 )
   {
-    unsigned int result = 0;
+    uint32_t result = 0;
 
-    result |= m_RxBuf[index+3]<<24;
-    result |= m_RxBuf[index+4]<<16;
-    result |= m_RxBuf[index+5]<<8;
-    result |= m_RxBuf[index+6];
+    result |= (uint32_t)m_RxBuf[index+3]<<24;
+    result |= (uint32_t)m_RxBuf[index+4]<<16;
+    result |= (uint32_t)m_RxBuf[index+5]<<8;
+    result |= (uint32_t)m_RxBuf[index+6];
     m_ParseDigit = result/10;
     m_IsData = true;
 
@@ -80,16 +80,18 @@ void cParser::addNextChar(unsigned char data)
   }
 }
 //// ----------------------------------------------------------------------------
-int cParser::getCurrentLen()const;
+int cParser::getCurrentLen()const { return m_ParseDigit; }
 //// ----------------------------------------------------------------------------
-void cParser::setNull(const int _null);
+void cParser::setNull(const int _null) { m_NullDigit = _null; }
 //// ----------------------------------------------------------------------------
-void cParser::setParseDigitValue(const int val);
+void cParser::setParseDigitValue(const int val) { m_ParseDigit = val; }
 //// ----------------------------------------------------------------------------
-void cParser::setCorrectCoef(const float realSize, const float requiredSize);
+void cParser::setCorrectCoef(const float realSize, const float requiredSize)
+{ m_CorrectCoef = requiredSize/realSize; }
 //// ----------------------------------------------------------------------------
 //// private
 //// ----------------------------------------------------------------------------
+// private:
 int cParser::CharToInt(char ch)
 {
   int res = 0;
@@ -109,7 +111,8 @@ int cParser::CharToInt(char ch)
   }
   return res;
 }
-//// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// private:
 int cParser::RxBufCheck(unsigned char* buf, unsigned char size)
 {
   bool is_find_begin = false;
@@ -166,7 +169,8 @@ int cParser::RxBufCheck(unsigned char* buf, unsigned char size)
 
   return -1; // нет данных
 }
-//// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// private:
 void cParser::ClearBuf(unsigned char* buf, unsigned char _size)
 {
   for(int i = 0; i < _size; ++i)

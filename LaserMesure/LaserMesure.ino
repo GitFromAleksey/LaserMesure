@@ -1,13 +1,10 @@
 #include <EEPROM.h>
 
-//#include <SPI.h>
 #include <stdio.h>
-//#include "stdinout.h"
 #include "blink.h"
 #include "timeout.h"
 #include "parser.h"
-//#include <SoftwareSerial.h>
-#include "LedControl.h" //  Подключаем библиотеку
+#include "LedControl.h" //  Подключаем библиотеку индикатора
 #include "SwT4sProtocolBuilder.h"
 //#include "SwT4sProtocolParser.h"
 
@@ -34,14 +31,11 @@ enum eRequestModes
 };
 
 eRequestModes RequestMode = firstTimeSendKey;
-//#define TIMER_SEND_KEY        1000u
-//#define TIMER_SEND_GET_DATA   500u
 
-#define KEY_NULL_PIN          13u // TODO совпадает с выводом светодиода. Нужно переобозначить.
+#define KEY_NULL_PIN                9u
 
 #define EEPROM_NULL_VALUE_ADDRESS   0
 
-//unsigned int time = millis();
 bool isInputData = false;
 
 cBlink ledBlink(DEFAULT_BLINK_PERIOD);
@@ -51,20 +45,21 @@ cParser parser(0);
 cSwT4sProtocolBuilder swT4sProtocolBuilder;
 //SwT4sProtocolParser swT4sProtocolParser;
 
+// ---------------------------------------------------------------------------------------
 void setup()
 {
   Serial.begin(9600);
   while(!Serial);
-//  Serial.setTimeout(200);
 
   //Инициируем MAX7219
-  lc.shutdown(0, false); // включаем дисплей энергосбережение дисплей
+  lc.shutdown(0, false);  // включаем дисплей энергосбережение дисплей
   lc.setIntensity(0, 15); // устанавливаем яркость (0-минимум, 15-максимум)
-  lc.clearDisplay(0); // очищаем дисплей
+  lc.clearDisplay(0);     // очищаем дисплей
   delay(500);
 
-//  pinMode(KEY_NULL_PIN, INPUT);
-//  digitalWrite(KEY_NULL_PIN, HIGH);
+  // инициализация кнопки установки нуля
+  pinMode(KEY_NULL_PIN, INPUT);
+  digitalWrite(KEY_NULL_PIN, HIGH);
   
   parser.setParseDigitValue(EepromRead(EEPROM_NULL_VALUE_ADDRESS));
   parser.setNull(EepromRead(EEPROM_NULL_VALUE_ADDRESS));
@@ -72,7 +67,7 @@ void setup()
   IndicatorShow();
   delay(500);
 }
-
+// ---------------------------------------------------------------------------------------
 void IndicatorClear()
 {
   for(uint8_t i = 0; i < DIST_SIZE; i++)
@@ -80,7 +75,7 @@ void IndicatorClear()
     dist[i] = 0;
   }
 }
-
+// ---------------------------------------------------------------------------------------
 void IndicatorShow()
 {
   parser.getArray(dist);
@@ -90,31 +85,27 @@ void IndicatorShow()
     lc.setChar(0, a, dist[a] , false);
   }
 }
-
+// ---------------------------------------------------------------------------------------
 void SerialSendData(char* buf, int bufSize)
 {
-//  for(int i = 0; i < bufSize; ++i)
-//  {
-//    Serial.write(buf[i]);
-//  }
-Serial.write(buf, bufSize);
+  Serial.write(buf, bufSize);
 }
-
+// ---------------------------------------------------------------------------------------
 //void serialEvent()
 //{
 //}
-
+// ---------------------------------------------------------------------------------------
 void EepromSave(int address, int val)
 {
   EEPROM.write(address, val>>8);
   EEPROM.write(address+1, val);
 }
-
+// ---------------------------------------------------------------------------------------
 int EepromRead(int address)
 {
   return (int)((EEPROM.read(address)<<8) | EEPROM.read(address+1));
 }
-
+// ---------------------------------------------------------------------------------------
 void loop()
 {
   int dataSize = 0;
@@ -129,11 +120,11 @@ void loop()
   if(timerRequest.isTimeOver())
   {
     ledBlink.LedToggle();
+
     switch(RequestMode)
     {
       case firstTimeSendKey:
         // отправка кнопки READ
-
         IndicatorShow();
         
         dataSize = swT4sProtocolBuilder.KeyRead(txBuffer, TX_BUF_SIZE);
@@ -162,21 +153,21 @@ void loop()
     } 
   }
 
-//  if(digitalRead(KEY_NULL_PIN) == LOW)
-//  {
-//    int cnt = 100;
-//    while(digitalRead(KEY_NULL_PIN) == LOW)
-//    {
-//      delay(1);
-//      if(cnt-- == 0)
-//      {
-//        ledBlink.LedOn();
-//        IndicatorShow();
-//        EepromSave(EEPROM_NULL_VALUE_ADDRESS, parser.getCurrentLen());
-//        parser.setNull( parser.getCurrentLen());
-//        delay(3000);
-//      }
-//    }
-//  }
+  if(digitalRead(KEY_NULL_PIN) == LOW)
+  {
+    int cnt = 100;
+    while(digitalRead(KEY_NULL_PIN) == LOW)
+    {
+      delay(1);
+      if(cnt-- == 0)
+      {
+        ledBlink.LedOn();
+        IndicatorShow();
+        EepromSave(EEPROM_NULL_VALUE_ADDRESS, parser.getCurrentLen());
+        parser.setNull( parser.getCurrentLen());
+        delay(3000);
+      }
+    }
+  }
 
 }

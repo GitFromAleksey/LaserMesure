@@ -9,7 +9,6 @@
 #define SwT4sProtocolParser_H_
 
 #include <SoftwareSerial.h>
-//#include <iostream>
 
 const unsigned char RX_BUF_SIZE = 20;
 

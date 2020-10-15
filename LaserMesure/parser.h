@@ -1,11 +1,7 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-//#include <string.h>
-//#include "stdinout.h"
-//#include <SoftwareSerial.h>
 #include <stdint.h>
-//#include <math.h>
 
 const unsigned char _RX_BUF_SIZE = 50;
 
@@ -22,20 +18,20 @@ public:
   ~cParser();
 
   void getArray(char *dist);
-// -----------------------------------------------------------------------------
+
   void addNextChar(unsigned char data);
 
-  int getCurrentLen()const { return m_ParseDigit; }
+  int getCurrentLen()const;
 
-  void setNull(const int _null) { m_NullDigit = _null; }
+  void setNull(const int _null);
 
-  void setParseDigitValue(const int val) { m_ParseDigit = val; }
+  void setParseDigitValue(const int val);
 
-  void setCorrectCoef(const float realSize, const float requiredSize) { m_CorrectCoef = requiredSize/realSize; }
+  void setCorrectCoef(const float realSize, const float requiredSize);
 
 private:
-  int m_ParseDigit;   // ответ от лазера в виде числа
-  int m_NullDigit;    // нулевая координата, число от которого вычитается m_ParseDigit. Это и есть искомое расстояние
+  int m_ParseDigit;     // ответ от лазера в виде числа
+  int m_NullDigit;      // нулевая координата, число от которого вычитается m_ParseDigit. Это и есть искомое расстояние
   int m_OutCharBuf[4];  // промежуточный буфер для конвертации строки в число
   uint8_t m_RxBufCnt;
   uint8_t m_RxBuf[_RX_BUF_SIZE];
@@ -50,6 +46,5 @@ private:
   void ClearBuf(unsigned char* buf, unsigned char _size);
 
 };
-
 
 #endif /* PARSER_H */

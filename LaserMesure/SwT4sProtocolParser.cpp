@@ -16,6 +16,7 @@ SwT4sProtocolParser::SwT4sProtocolParser() : m_ParseDigit(0), m_RxBufCnt(0){}
 
 SwT4sProtocolParser::~SwT4sProtocolParser(){}
 
+// ---------------------------------------------------------------------------------------
 void SwT4sProtocolParser::AddData(unsigned char data)
 {
 	m_RxBuf[m_RxBufCnt++] = data;
